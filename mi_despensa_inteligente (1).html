@@ -1,0 +1,2456 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#315b45">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mi Despensa">
+<link id="pwa-manifest" rel="manifest">
+<title>Mi Despensa Inteligente · Gestión de Cocina, Hogar y Ahorro</title>
+<style>
+:root{
+  --green:#315b45;
+  --green-dark:#1f3d2d;
+  --green2:#e6efe7;
+  --green-soft:#f2f7f3;
+  --cream:#faf8f1;
+  --ink:#24342b;
+  --muted:#68766d;
+  --orange:#e68a2e;
+  --orange-bg:#fff0df;
+  --red:#b84b42;
+  --red-bg:#fde8e6;
+  --line:#e3e7dd;
+  --white:#ffffff;
+  --shadow:0 4px 18px rgba(36,52,43,0.06);
+  --shadow-lg:0 16px 40px rgba(24,38,30,0.14);
+  --radius:18px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--ink);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  line-height:1.45;
+  padding-bottom:84px;
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;transition:transform .12s ease, opacity .15s ease, background .15s ease, border-color .15s ease}
+button:active{transform:scale(0.98)}
+
+/* ==================== PANTALLA DE INICIO DE SESIÓN ==================== */
+.auth-screen{
+  position:fixed;
+  inset:0;
+  background:linear-gradient(145deg, var(--green-dark) 0%, var(--green) 55%, #3d7055 100%);
+  z-index:200;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  overflow-y:auto;
+}
+.auth-screen.active{display:flex}
+.auth-card{
+  background:var(--white);
+  width:min(100%, 440px);
+  border-radius:26px;
+  padding:28px 24px;
+  box-shadow:var(--shadow-lg);
+  animation:popIn .25s ease;
+}
+@keyframes popIn{from{opacity:0;transform:scale(0.96) translateY(8px)}to{opacity:1;transform:none}}
+.auth-logo{
+  width:58px;
+  height:58px;
+  border-radius:18px;
+  background:var(--green2);
+  display:grid;
+  place-items:center;
+  font-size:30px;
+  margin:0 auto 12px;
+}
+.auth-tabs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  background:#f1f4ee;
+  padding:4px;
+  border-radius:13px;
+  margin:16px 0;
+}
+.auth-tabs button{
+  border:0;
+  background:transparent;
+  padding:9px;
+  border-radius:10px;
+  font-size:13px;
+  font-weight:600;
+  color:var(--muted);
+}
+.auth-tabs button.active{
+  background:var(--white);
+  color:var(--green);
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+}
+.saved-accounts{
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+}
+.acc-chip{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:9px 12px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  margin-top:7px;
+  background:var(--green-soft);
+  cursor:pointer;
+}
+.acc-chip:hover{border-color:var(--green)}
+
+/* ==================== HEADER ==================== */
+header{
+  background:linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+  color:var(--white);
+  padding:20px 18px 26px;
+  border-radius:0 0 28px 28px;
+  box-shadow:0 6px 20px rgba(49,91,69,0.18);
+}
+header .top{
+  max-width:980px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+header h1{font-size:21px;margin:0;letter-spacing:-0.3px;display:flex;align-items:center;gap:8px}
+header p{margin:4px 0 0;color:#dce8de;font-size:12.5px}
+.header-badges{display:flex;align-items:center;gap:8px}
+.streak-badge{
+  background:rgba(255,255,255,0.14);
+  border:1px solid rgba(255,255,255,0.22);
+  padding:6px 11px;
+  border-radius:30px;
+  font-size:12px;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.alert-bell{
+  position:relative;
+  background:rgba(255,255,255,0.16);
+  border:0;
+  color:white;
+  width:38px;
+  height:38px;
+  border-radius:13px;
+  font-size:17px;
+  display:grid;
+  place-items:center;
+}
+.alert-dot{
+  position:absolute;
+  top:6px;
+  right:6px;
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:#ff6b5b;
+  border:2px solid var(--green);
+  display:none;
+}
+.alert-dot.show{display:block}
+.user-pill{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  background:rgba(255,255,255,0.16);
+  border:1px solid rgba(255,255,255,0.24);
+  color:white;
+  padding:4px 10px 4px 5px;
+  border-radius:30px;
+  font-size:12px;
+  font-weight:600;
+}
+.avatar-circle{
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  background:var(--cream);
+  color:var(--green-dark);
+  display:grid;
+  place-items:center;
+  font-weight:800;
+  font-size:12px;
+}
+
+/* ==================== LAYOUT ==================== */
+main{max-width:980px;margin:auto;padding:16px 15px 34px}
+.section-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:22px 0 12px;
+  flex-wrap:wrap;
+}
+.section-title h2{font-size:18px;margin:0;letter-spacing:-0.2px}
+.muted{color:var(--muted);font-size:13px}
+
+/* Banner de Alertas Críticas */
+.critical-banner{
+  background:var(--red-bg);
+  border:1px solid #f5c6c2;
+  color:#8c2d25;
+  border-radius:16px;
+  padding:13px 15px;
+  margin-bottom:14px;
+  display:none;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.critical-banner.show{display:flex}
+.critical-banner b{display:block;font-size:14px;margin-bottom:2px}
+.critical-banner span{font-size:12px}
+
+/* Stats Grid */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:640px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:14px;
+  box-shadow:var(--shadow);
+}
+.stat .stat-head{display:flex;justify-content:space-between;align-items:center}
+.stat .emoji{font-size:21px}
+.stat strong{display:block;font-size:22px;margin:8px 0 2px;color:var(--ink)}
+.stat span{font-size:12px;color:var(--muted)}
+
+/* Quick Actions */
+.actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:720px){.actions{grid-template-columns:repeat(4,1fr)}}
+.action{
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:14px;
+  background:var(--white);
+  text-align:left;
+  color:var(--ink);
+  box-shadow:var(--shadow);
+}
+.action:hover{border-color:var(--green);background:var(--green-soft)}
+.action b{display:block;margin:8px 0 3px;font-size:14px}
+.action small{color:var(--muted);line-height:1.35;font-size:12px;display:block}
+.action .emoji{font-size:24px}
+
+/* Chef Suggestion Card */
+.chef-card{
+  background:linear-gradient(135deg, #ffffff 0%, #f1f7f2 100%);
+  border:1px solid #cde0d1;
+  border-radius:var(--radius);
+  padding:16px;
+  margin:14px 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  box-shadow:var(--shadow);
+  flex-wrap:wrap;
+}
+.chef-card .tag{
+  display:inline-block;
+  background:var(--green);
+  color:white;
+  font-size:11px;
+  font-weight:700;
+  padding:3px 9px;
+  border-radius:20px;
+  margin-bottom:6px;
+}
+.chef-card h3{margin:0 0 4px;font-size:16px}
+.chef-card p{margin:0;font-size:13px;color:var(--muted)}
+
+/* Quick Add Chips (Básicos en 1 toque) */
+.quick-chips{
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+  padding-bottom:6px;
+  margin-bottom:10px;
+}
+.q-chip{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:30px;
+  padding:6px 12px;
+  font-size:12px;
+  font-weight:600;
+  color:var(--ink);
+  white-space:nowrap;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+}
+.q-chip:hover{background:var(--green2);border-color:var(--green);color:var(--green)}
+
+/* Panels & Cards */
+.panel{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:15px;
+  margin-bottom:12px;
+  box-shadow:var(--shadow);
+}
+.food-item{
+  padding:13px 0;
+  border-bottom:1px solid var(--line);
+}
+.food-item:last-child{border-bottom:0;padding-bottom:2px}
+.food-item:first-child{padding-top:2px}
+.food-row{display:flex;align-items:flex-start;gap:12px}
+.food-emoji{
+  width:46px;
+  height:46px;
+  border-radius:14px;
+  background:var(--green-soft);
+  border:1px solid var(--line);
+  display:grid;
+  place-items:center;
+  font-size:24px;
+  flex-shrink:0;
+}
+.food-info{flex:1;min-width:0}
+.food-info b{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:15px;margin-bottom:3px}
+.food-meta{color:var(--muted);font-size:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.food-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:10px;
+  padding-left:58px;
+}
+
+/* Pills & Badges */
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:4px 9px;
+  border-radius:30px;
+  background:var(--green2);
+  font-size:11px;
+  font-weight:600;
+  color:var(--green);
+  white-space:nowrap;
+}
+.pill.warn{background:var(--orange-bg);color:#9b5819}
+.pill.danger{background:var(--red-bg);color:var(--red)}
+.pill.neutral{background:#f0f2ee;color:#526057}
+
+/* Buttons */
+.primary{
+  background:var(--green);
+  color:white;
+  border:0;
+  border-radius:12px;
+  padding:10px 15px;
+  font-weight:650;
+  font-size:13px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+.primary:hover{background:var(--green-dark)}
+.secondary{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:11px;
+  padding:8px 12px;
+  color:var(--ink);
+  font-size:12px;
+  font-weight:600;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+}
+.secondary:hover{background:#f5f7f2;border-color:#cdd4c7}
+.btn-xs{padding:6px 10px;font-size:11px;border-radius:9px}
+.danger-btn{
+  background:var(--red-bg);
+  color:var(--red);
+  border:1px solid #f3cbc7;
+  border-radius:11px;
+  padding:8px 12px;
+  font-size:12px;
+  font-weight:600;
+}
+.warn-btn{
+  background:var(--orange-bg);
+  color:#9b5819;
+  border:1px solid #f3d5b5;
+  border-radius:11px;
+  padding:8px 12px;
+  font-size:12px;
+  font-weight:600;
+}
+
+/* Filters & Inputs */
+.toolbar{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:12px}
+@media(min-width:680px){.toolbar{grid-template-columns:2fr 1fr 1fr 1fr}}
+input,select,textarea{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:var(--white);
+  color:var(--ink);
+  font-size:13px;
+}
+input:focus,select:focus{outline:2px solid rgba(49,91,69,0.25);border-color:var(--green)}
+.field{display:flex;flex-direction:column;gap:5px;margin:11px 0}
+.field label{font-size:12px;color:var(--muted);font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* Shopping List */
+.shop-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:11px 0;
+  border-bottom:1px solid var(--line);
+}
+.shop-row:last-child{border-bottom:0}
+.shop-check{
+  width:22px;
+  height:22px;
+  accent-color:var(--green);
+  cursor:pointer;
+  flex-shrink:0;
+}
+.shop-row.checked .shop-name{text-decoration:line-through;color:var(--muted)}
+
+/* Recipes & Meal Planner */
+.subtabs{
+  display:inline-flex;
+  background:#ecefe7;
+  padding:4px;
+  border-radius:12px;
+  margin-bottom:12px;
+}
+.subtabs button{
+  border:0;
+  background:transparent;
+  padding:7px 14px;
+  border-radius:9px;
+  font-size:12px;
+  font-weight:600;
+  color:var(--muted);
+}
+.subtabs button.active{
+  background:var(--white);
+  color:var(--green);
+  box-shadow:0 2px 6px rgba(0,0,0,0.06);
+}
+.recipe-grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:720px){.recipe-grid{grid-template-columns:1fr 1fr}}
+.recipe{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:16px;
+  box-shadow:var(--shadow);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+.recipe-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.recipe h3{margin:8px 0 6px;font-size:17px}
+.ing-tags{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}
+.ing-tag{font-size:11px;padding:4px 8px;border-radius:8px;font-weight:500}
+.ing-tag.have{background:var(--green2);color:var(--green);border:1px solid #c6dec9}
+.ing-tag.miss{background:var(--orange-bg);color:#9b5819;border:1px solid #f2d3b1}
+.progress-bar{
+  width:100%;
+  height:7px;
+  background:#edf0e8;
+  border-radius:10px;
+  overflow:hidden;
+  margin:8px 0 4px;
+}
+.progress-fill{height:100%;background:var(--green);border-radius:10px;transition:width .3s ease}
+
+.planner-grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:680px){.planner-grid{grid-template-columns:repeat(2,1fr)}}
+.day-card{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:15px;
+  padding:13px;
+  box-shadow:var(--shadow);
+}
+.day-card h4{margin:0 0 8px;font-size:14px;color:var(--green);display:flex;justify-content:space-between;align-items:center}
+
+/* Charts & Analytics */
+.donut-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.chart-box{display:flex;flex-direction:column;gap:12px}
+.bar-row{display:flex;flex-direction:column;gap:4px}
+.bar-label{display:flex;justify-content:space-between;font-size:12px;font-weight:600}
+.bar-track{height:12px;background:#eef1ea;border-radius:8px;overflow:hidden}
+.bar-val{height:100%;border-radius:8px;transition:width .4s ease}
+.badges-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:640px){.badges-grid{grid-template-columns:repeat(4,1fr)}}
+.badge-card{
+  border:1px solid var(--line);
+  border-radius:15px;
+  padding:12px;
+  text-align:center;
+  background:#f8faf6;
+  opacity:0.55;
+  filter:grayscale(0.9);
+}
+.badge-card.unlocked{
+  opacity:1;
+  filter:none;
+  background:linear-gradient(180deg, #ffffff 0%, #eef6ef 100%);
+  border-color:#b8d4be;
+}
+.badge-card .b-icon{font-size:28px;margin-bottom:6px}
+.badge-card b{display:block;font-size:12px;margin-bottom:3px}
+.badge-card small{font-size:11px;color:var(--muted);display:block}
+
+/* Navigation (6 tabs) */
+.nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:rgba(255,255,255,0.97);
+  backdrop-filter:blur(10px);
+  border-top:1px solid var(--line);
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  padding:7px 4px calc(7px + env(safe-area-inset-bottom));
+  z-index:20;
+  box-shadow:0 -4px 18px rgba(0,0,0,0.04);
+}
+.nav button{
+  background:none;
+  border:0;
+  color:var(--muted);
+  font-size:10px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  padding:4px 2px;
+  border-radius:10px;
+}
+.nav button span{font-size:19px;line-height:1}
+.nav button.active{color:var(--green);font-weight:700;background:var(--green-soft)}
+
+@media(min-width:860px){
+  body{padding-bottom:24px}
+  .nav{
+    position:sticky;
+    top:0;
+    bottom:auto;
+    max-width:980px;
+    margin:-18px auto 10px;
+    border-radius:18px;
+    border:1px solid var(--line);
+    padding:8px;
+    box-shadow:var(--shadow);
+  }
+  .nav button{flex-direction:row;font-size:13px;padding:9px 10px;gap:7px}
+  .nav button span{font-size:17px}
+}
+
+/* Views & Misc */
+.view{display:none;animation:fadeIn .2s ease}
+.view.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.empty{text-align:center;padding:30px 14px;color:var(--muted)}
+.empty .emoji{font-size:36px;margin-bottom:6px}
+.toast{
+  position:fixed;
+  top:16px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#24342b;
+  color:#fff;
+  padding:11px 18px;
+  border-radius:30px;
+  z-index:300;
+  display:none;
+  max-width:92%;
+  font-size:13px;
+  font-weight:500;
+  box-shadow:0 8px 24px rgba(0,0,0,0.22);
+}
+
+/* Dialog / Modal */
+dialog{
+  border:0;
+  border-radius:22px;
+  width:min(94%,520px);
+  padding:20px;
+  color:var(--ink);
+  max-height:90vh;
+  overflow:auto;
+  box-shadow:0 20px 50px rgba(0,0,0,0.25);
+}
+dialog::backdrop{background:rgba(24,36,39,0.55);backdrop-filter:blur(3px)}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.modal-head h2{margin:0;font-size:19px}
+.switch-row{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer}
+.switch-row input{width:auto}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- ==================== PANTALLA DE INICIO DE SESIÓN ==================== -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">🥑</div>
+    <h2 style="text-align:center;margin:0;font-size:22px">Mi Despensa Inteligente</h2>
+    <p class="muted" style="text-align:center;margin:4px 0 0">Tu cocina organizada, tu ahorro bajo control.</p>
+
+    <div class="auth-tabs">
+      <button type="button" id="tabLogin" class="active" onclick="switchAuthTab('login')">Iniciar Sesión</button>
+      <button type="button" id="tabRegister" onclick="switchAuthTab('register')">Crear Cuenta</button>
+    </div>
+
+    <!-- Formulario Login -->
+    <form id="loginForm">
+      <div class="field">
+        <label>Correo electrónico o usuario</label>
+        <input id="loginEmail" type="text" required placeholder="ej. familia@hogar.mx">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input id="loginPass" type="password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="primary" style="width:100%;padding:12px;margin-top:6px">Entrar a mi cocina →</button>
+    </form>
+
+    <!-- Formulario Registro -->
+    <form id="registerForm" style="display:none">
+      <div class="field">
+        <label>Tu nombre o familia *</label>
+        <input id="regName" required placeholder="Ej. Familia Hernández">
+      </div>
+      <div class="field">
+        <label>Correo electrónico *</label>
+        <input id="regEmail" type="email" required placeholder="tu@correo.com">
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>Contraseña *</label>
+          <input id="regPass" type="password" required minlength="4" placeholder="Mín. 4 caracteres">
+        </div>
+        <div class="field">
+          <label>Nombre de tu Hogar</label>
+          <input id="regHome" value="Casa Principal" placeholder="Ej. Casa Principal">
+        </div>
+      </div>
+      <label class="switch-row" style="margin:6px 0 12px;font-size:12px">
+        <input type="checkbox" id="regSeedDemo" checked>
+        Incluir alimentos de ejemplo para empezar rápido
+      </label>
+      <button type="submit" class="primary" style="width:100%;padding:12px"> Crear mi cuenta y entrar</button>
+    </form>
+
+    <div style="text-align:center;margin-top:12px">
+      <button type="button" class="secondary" style="width:100%;justify-content:center" onclick="loginAsGuest()">
+        👤 Continuar en Modo Invitado (Demo)
+      </button>
+    </div>
+
+    <div class="saved-accounts" id="savedAccountsBox" style="display:none">
+      <span class="muted" style="font-size:11px;font-weight:700;text-transform:uppercase">Cuentas guardadas en este dispositivo:</span>
+      <div id="savedAccountsList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== HEADER ==================== -->
+<header>
+  <div class="top">
+    <div>
+      <h1>🥑 Mi Despensa Inteligente</h1>
+      <p id="headerSub">Organiza tu cocina, cocina con lo que tienes y ahorra.</p>
+    </div>
+    <div class="header-badges">
+      <div class="streak-badge" title="Días seguidos sin desperdiciar comida">🔥 <span id="streakHeader">0</span>d</div>
+      <button class="alert-bell" onclick="openAlertsModal()" title="Centro de avisos">
+        🔔<span class="alert-dot" id="alertDot"></span>
+      </button>
+      <button class="user-pill" onclick="showView('ajustes')" title="Perfil y cuenta">
+        <span class="avatar-circle" id="userAvatar">U</span>
+        <span id="userHeaderName">Usuario</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<nav class="nav" aria-label="Menú principal">
+  <button class="active" data-view="inicio" onclick="showView('inicio')"><span>🏠</span>Inicio</button>
+  <button data-view="despensa" onclick="showView('despensa')"><span>🧺</span>Despensa</button>
+  <button data-view="compras" onclick="showView('compras')"><span>🛒</span>Compras</button>
+  <button data-view="recetas" onclick="showView('recetas')"><span>🍲</span>Recetas</button>
+  <button data-view="ahorro" onclick="showView('ahorro')"><span>📊</span>Ahorro</button>
+  <button data-view="ajustes" onclick="showView('ajustes')"><span>⚙️</span>Perfil</button>
+</nav>
+
+<main>
+  <!-- ==================== 1. INICIO (DASHBOARD) ==================== -->
+  <section class="view active" id="inicio">
+    <div id="criticalBanner" class="critical-banner">
+      <div>
+        <b id="criticalTitle">⚠️ ¡Atención! Alimentos por vencer hoy</b>
+        <span id="criticalDesc">Revisa los productos antes de que se echen a perder.</span>
+      </div>
+      <button class="danger-btn btn-xs" onclick="showView('despensa');document.getElementById('filterStatus').value='soon';renderFoods()">Ver ahora</button>
+    </div>
+
+    <div class="section-title">
+      <h2>Hola, <span id="welcomeUserName">Chef</span> 👋</h2>
+      <span class="muted" id="todayLabel"></span>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-head"><span class="emoji">🥬</span><span class="pill neutral">Activo</span></div>
+        <strong id="statTotal">0</strong>
+        <span>Productos en casa</span>
+      </div>
+      <div class="stat">
+        <div class="stat-head"><span class="emoji">⏰</span><span class="pill warn">Alerta</span></div>
+        <strong id="statSoon">0</strong>
+        <span>Por caducar pronto</span>
+      </div>
+      <div class="stat">
+        <div class="stat-head"><span class="emoji">💚</span><span class="pill">Aprovechado</span></div>
+        <strong id="statSaved">$0</strong>
+        <span>Valor consumido</span>
+      </div>
+      <div class="stat">
+        <div class="stat-head"><span class="emoji">🛒</span><span class="pill neutral">Súper</span></div>
+        <strong id="statShop">0</strong>
+        <span>En lista de compras</span>
+      </div>
+    </div>
+
+    <!-- Sugerencia del Chef -->
+    <div class="chef-card">
+      <div style="flex:1;min-width:220px">
+        <span class="tag">👨‍🍳 Sugerencia del Chef</span>
+        <h3 id="chefRecipeTitle">Cargando recomendación...</h3>
+        <p id="chefRecipeDesc">Basada en tus ingredientes próximos a vencer.</p>
+      </div>
+      <button class="primary" onclick="showView('recetas')">Ir a cocinar →</button>
+    </div>
+
+    <!-- Meta de ahorro mensual -->
+    <div class="panel" style="padding:13px 15px">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:6px">
+        <strong>🎯 Meta mensual de aprovechamiento</strong>
+        <span id="goalText" class="muted">$0 / $500 MXN</span>
+      </div>
+      <div class="progress-bar" style="height:9px"><div class="progress-fill" id="goalBar" style="width:0%"></div></div>
+    </div>
+
+    <div class="section-title"><h2>Acciones rápidas</h2></div>
+    <div class="actions">
+      <button class="action" onclick="openFoodModal()">
+        <div class="emoji">➕</div>
+        <b>Agregar alimento</b>
+        <small>Registra compras con fecha y ubicación.</small>
+      </button>
+      <button class="action" onclick="showView('despensa')">
+        <div class="emoji">🧺</div>
+        <b>Inventario completo</b>
+        <small>Filtra por refri, alacena o caducidad.</small>
+      </button>
+      <button class="action" onclick="showView('compras')">
+        <div class="emoji">📝</div>
+        <b>Lista del súper</b>
+        <small>Revisa lo que falta y pasa compras.</small>
+      </button>
+      <button class="action" onclick="showView('recetas')">
+        <div class="emoji">📅</div>
+        <b>Plan semanal</b>
+        <small>Organiza tus comidas y lista.</small>
+      </button>
+    </div>
+
+    <div class="section-title">
+      <h2>Consume primero (Prioridad)</h2>
+      <button class="secondary btn-xs" onclick="showView('despensa')">Ver inventario →</button>
+    </div>
+    <div class="panel" id="urgentList"></div>
+  </section>
+
+  <!-- ==================== 2. MI DESPENSA (INVENTARIO AVANZADO) ==================== -->
+  <section class="view" id="despensa">
+    <div class="section-title">
+      <h2>Mi Despensa (<span id="inventoryCount">0</span>)</h2>
+      <button class="primary" onclick="openFoodModal()">+ Agregar producto</button>
+    </div>
+
+    <!-- Añadido rápido en 1 toque -->
+    <div style="margin-bottom:6px;font-size:12px;color:var(--muted);font-weight:600">⚡ Añadido rápido de básicos (1 toque):</div>
+    <div class="quick-chips">
+      <button class="q-chip" onclick="quickAddBasic('Leche entera',1,'litro(s)','Lácteos','Refrigerador',29,7)">🥛 + Leche</button>
+      <button class="q-chip" onclick="quickAddBasic('Huevo blanco',12,'pieza(s)','Lácteos','Refrigerador',48,14)">🥚 + 12 Huevos</button>
+      <button class="q-chip" onclick="quickAddBasic('Tortillas de maíz',1,'kg','Panadería','Refrigerador',24,4)">🫓 + Tortillas</button>
+      <button class="q-chip" onclick="quickAddBasic('Jitomate saladet',1,'kg','Frutas y verduras','Refrigerador',32,5)">🍅 + Jitomate</button>
+      <button class="q-chip" onclick="quickAddBasic('Plátanos',5,'pieza(s)','Frutas y verduras','Frutero',22,4)">🍌 + Plátanos</button>
+      <button class="q-chip" onclick="quickAddBasic('Pechuga de pollo',0.5,'kg','Carnes y pescados','Congelador',68,15)">🍗 + Pollo</button>
+      <button class="q-chip" onclick="quickAddBasic('Queso panela',1,'pieza(s)','Lácteos','Refrigerador',48,7)">🧀 + Queso</button>
+      <button class="q-chip" onclick="quickAddBasic('Aguacate Hass',3,'pieza(s)','Frutas y verduras','Frutero',36,4)">🥑 + Aguacate</button>
+    </div>
+
+    <div class="toolbar">
+      <input id="searchFood" placeholder="🔍 Buscar por nombre o nota..." oninput="renderFoods()">
+      <select id="filterCategory" onchange="renderFoods()">
+        <option value="todas">Todas las categorías</option>
+        <option>Frutas y verduras</option>
+        <option>Lácteos</option>
+        <option>Carnes y pescados</option>
+        <option>Despensa</option>
+        <option>Panadería</option>
+        <option>Bebidas</option>
+        <option>Congelados</option>
+        <option>Otros</option>
+      </select>
+      <select id="filterLocation" onchange="renderFoods()">
+        <option value="todas">Todas las ubicaciones</option>
+        <option>Refrigerador</option>
+        <option>Congelador</option>
+        <option>Alacena</option>
+        <option>Frutero</option>
+      </select>
+      <select id="filterStatus" onchange="renderFoods()">
+        <option value="todos">Todos los estados</option>
+        <option value="soon">⏰ Por caducar pronto</option>
+        <option value="expired">🚨 Caducados</option>
+        <option value="low">📉 Stock bajo (≤ 1)</option>
+      </select>
+    </div>
+
+    <div class="panel" id="foodList"></div>
+  </section>
+
+  <!-- ==================== 3. LISTA DE COMPRAS INTELIGENTE ==================== -->
+  <section class="view" id="compras">
+    <div class="section-title">
+      <h2>Lista de Compras Inteligente</h2>
+      <button class="secondary btn-xs" onclick="autoFillShoppingList()">✨ Agregar agotados / por vencer</button>
+    </div>
+
+    <div class="panel">
+      <form id="shopForm" style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;align-items:center">
+        <input id="shopName" required placeholder="Ej. Tortillas, Aguacate...">
+        <input id="shopQty" type="number" min="0.1" step="0.1" value="1" placeholder="Cant.">
+        <input id="shopPrice" type="number" min="0" step="0.5" placeholder="$ Est.">
+        <button class="primary" type="submit">+</button>
+      </form>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);flex-wrap:wrap;gap:8px">
+        <span class="muted">Presupuesto estimado total: <strong style="color:var(--ink)" id="shopBudget">$0.00</strong></span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="secondary btn-xs" onclick="clearCheckedShop()">Limpiar marcados</button>
+          <button class="primary btn-xs" onclick="transferPurchasedToPantry()">📦 Pasar marcados a Despensa</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="shoppingList"></div>
+  </section>
+
+  <!-- ==================== 4. RECETARIO Y PLANIFICADOR SEMANAL ==================== -->
+  <section class="view" id="recetas">
+    <div class="section-title">
+      <h2>Recetas y Menú Semanal</h2>
+      <div class="subtabs" style="margin:0">
+        <button id="subBtnRecipes" class="active" onclick="switchRecipeSubtab('recipes')">🍲 Recetario (24)</button>
+        <button id="subBtnPlanner" onclick="switchRecipeSubtab('planner')">📅 Plan Semanal</button>
+      </div>
+    </div>
+
+    <!-- Vista Recetario -->
+    <div id="recipesSubView">
+      <div class="panel">
+        <div class="grid3">
+          <div class="field" style="margin:0">
+            <label>Tiempo de comida</label>
+            <select id="recMeal" onchange="renderRecipes()">
+              <option value="todos">Todos</option>
+              <option>Desayuno</option>
+              <option>Comida</option>
+              <option>Cena</option>
+              <option>Snack / Bebida</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Tiempo máximo</label>
+            <select id="recTime" onchange="renderRecipes()">
+              <option value="999">Cualquier tiempo</option>
+              <option value="15">Hasta 15 min</option>
+              <option value="30" selected>Hasta 30 min</option>
+              <option value="60">Hasta 1 hora</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Dificultad</label>
+            <select id="recDiff" onchange="renderRecipes()">
+              <option value="todas">Todas</option>
+              <option>Fácil</option>
+              <option>Media</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <label class="switch-row">
+            <input type="checkbox" id="recOnlyHave" onchange="renderRecipes()">
+            Mostrar solo recetas 100% con lo que tengo en casa
+          </label>
+          <span class="muted" id="recipeMatchSummary" style="font-size:12px">24 recetas</span>
+        </div>
+      </div>
+
+      <div class="recipe-grid" id="recipeList"></div>
+    </div>
+
+    <!-- Vista Planificador Semanal -->
+    <div id="plannerSubView" style="display:none">
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div>
+          <b>Planificador de Comidas de la Semana</b>
+          <div class="muted" style="font-size:12px">Asigna recetas a cada día y manda los ingredientes faltantes al súper en un clic.</div>
+        </div>
+        <button class="primary btn-xs" onclick="syncPlannerToShopping()">🛒 Enviar faltantes de la semana al súper</button>
+      </div>
+      <div class="planner-grid" id="plannerGrid"></div>
+    </div>
+  </section>
+
+  <!-- ==================== 5. AHORRO Y ESTADÍSTICAS ==================== -->
+  <section class="view" id="ahorro">
+    <div class="section-title"><h2>Ahorro y Estadísticas</h2></div>
+
+    <div class="stats" style="margin-bottom:12px">
+      <div class="stat">
+        <div class="stat-head"><span class="emoji">💚</span></div>
+        <strong id="anConsumedVal" style="color:var(--green)">$0.00</strong>
+        <span>Aprovechado (<span id="anConsumedCnt">0</span> prod.)</span>
+      </div>
+      <div class="stat">
+        <div class="stat-head"><span class="emoji">🗑️</span></div>
+        <strong id="anWastedVal" style="color:var(--red)">$0.00</strong>
+        <span>Desperdiciado (<span id="anWastedCnt">0</span> prod.)</span>
+      </div>
+      <div class="stat">
+        <div class="stat-head"><span class="emoji">🎯</span></div>
+        <strong id="anEfficiency">100%</strong>
+        <span>Eficiencia de consumo</span>
+      </div>
+      <div class="stat">
+        <div class="stat-head"><span class="emoji">🔥</span></div>
+        <strong id="anStreak">0 días</strong>
+        <span>Racha sin desperdicio</span>
+      </div>
+    </div>
+
+    <!-- Gráfica Donut SVG de Aprovechado vs Desperdiciado -->
+    <div class="panel">
+      <h3 style="margin:0 0 12px;font-size:16px">Balance Económico (Aprovechado vs. Desperdicio)</h3>
+      <div id="balanceChart"></div>
+    </div>
+
+    <!-- Gráfica por Categorías -->
+    <div class="panel">
+      <h3 style="margin:0 0 12px;font-size:16px">Valor Aprovechado por Categoría</h3>
+      <div class="chart-box" id="categoryChart"></div>
+    </div>
+
+    <!-- Logros e Insignias -->
+    <div class="panel">
+      <h3 style="margin:0 0 12px;font-size:16px">Tus Logros de Cocina</h3>
+      <div class="badges-grid" id="badgesGrid"></div>
+    </div>
+
+    <!-- Historial reciente -->
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h3 style="margin:0;font-size:16px">Historial de Movimientos</h3>
+        <button class="secondary btn-xs" onclick="askConfirm('¿Limpiar el historial de movimientos?', clearHistory)">Limpiar historial</button>
+      </div>
+      <div id="historyList"></div>
+    </div>
+  </section>
+
+  <!-- ==================== 6. PERFIL, AJUSTES Y RESPALDO ==================== -->
+  <section class="view" id="ajustes">
+    <div class="section-title"><h2>Mi Cuenta y Ajustes</h2></div>
+
+    <!-- Tarjeta de Perfil y Sesión -->
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="avatar-circle" id="profileAvatarBig" style="width:48px;height:48px;font-size:18px;background:var(--green);color:white">U</div>
+          <div>
+            <b style="font-size:16px" id="profileDisplayName">Usuario</b>
+            <div class="muted" style="font-size:12px" id="profileDisplayEmail">invitado@despensa.local</div>
+          </div>
+        </div>
+        <button class="danger-btn" onclick="logoutUser()">🚪 Cerrar sesión / Cambiar cuenta</button>
+      </div>
+
+      <form id="profileForm" class="grid3" style="align-items:end;padding-top:10px;border-top:1px solid var(--line)">
+        <div class="field" style="margin:0">
+          <label>Nombre para mostrar</label>
+          <input id="profNameInput" required>
+        </div>
+        <div class="field" style="margin:0">
+          <label>Nombre del Hogar</label>
+          <input id="profHomeInput" required>
+        </div>
+        <button type="submit" class="primary">Guardar perfil</button>
+      </form>
+    </div>
+
+    <!-- Preferencias -->
+    <div class="panel">
+      <h3 style="margin:0 0 8px;font-size:16px">Preferencias de Alertas y Metas</h3>
+      <div class="grid2">
+        <div class="field" style="margin:0">
+          <label>Días de anticipación para alertas de caducidad</label>
+          <select id="cfgAlertDays" onchange="saveSettings()">
+            <option value="1">1 día antes</option>
+            <option value="2">2 días antes</option>
+            <option value="3">3 días antes (Recomendado)</option>
+            <option value="5">5 días antes</option>
+            <option value="7">7 días antes</option>
+          </select>
+        </div>
+        <div class="field" style="margin:0">
+          <label>Meta mensual de comida aprovechada ($ MXN)</label>
+          <input id="cfgMonthlyGoal" type="number" min="50" step="50" value="500" onchange="saveSettings()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Exportar e Importar -->
+    <div class="panel">
+      <h3 style="margin:0 0 6px;font-size:16px">Exportar e Importar Respaldo</h3>
+      <p class="muted" style="margin-top:0">Descarga los datos de tu cuenta en formato JSON o expórtalos a Excel (.CSV).</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+        <button class="primary" onclick="exportJSON()">📥 Descargar Respaldo (.JSON)</button>
+        <button class="secondary" onclick="exportCSV()">📊 Exportar Inventario (.CSV / Excel)</button>
+        <label class="secondary" style="cursor:pointer">
+          📤 Restaurar Respaldo (.JSON)
+          <input type="file" accept=".json" style="display:none" onchange="importJSON(event)">
+        </label>
+      </div>
+    </div>
+
+    <!-- Datos de prueba -->
+    <div class="panel">
+      <h3 style="margin:0 0 6px;font-size:16px">Gestión de Datos de esta Cuenta</h3>
+      <p class="muted" style="margin-top:0">Restaura una despensa de ejemplo realista o vacía tu inventario desde cero.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <button class="secondary" onclick="askConfirm('¿Cargar despensa de demostración? Reemplazará tus alimentos actuales.', loadDemoData)">🔄 Cargar despensa de demostración</button>
+        <button class="danger-btn" onclick="askConfirm('¿Borrar TODOS los alimentos, lista e historial de esta cuenta?', resetAllData)">🗑️ Vaciar mi cuenta</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ==================== MODAL AGREGAR / EDITAR ALIMENTO ==================== -->
+<dialog id="foodDialog">
+  <form id="foodForm">
+    <div class="modal-head">
+      <h2 id="foodModalTitle">Agregar alimento</h2>
+      <button type="button" class="secondary btn-xs" onclick="closeModal('foodDialog')">✕ Cerrar</button>
+    </div>
+    <input type="hidden" id="foodId">
+
+    <div class="field">
+      <label>Nombre del alimento *</label>
+      <input id="foodName" required placeholder="Ej. Pechuga de pollo, Leche, Jitomate...">
+    </div>
+
+    <div class="grid2">
+      <div class="field">
+        <label>Cantidad *</label>
+        <input id="foodQty" type="number" min="0.1" step="0.1" value="1" required>
+      </div>
+      <div class="field">
+        <label>Unidad</label>
+        <select id="foodUnit">
+          <option>pieza(s)</option>
+          <option>kg</option>
+          <option>g</option>
+          <option>litro(s)</option>
+          <option>ml</option>
+          <option>paquete(s)</option>
+          <option>lata(s)</option>
+          <option>docena(s)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="field">
+        <label>Categoría (sugiere caducidad)</label>
+        <select id="foodCategory" onchange="suggestExpiryByCategory()">
+          <option>Frutas y verduras</option>
+          <option>Lácteos</option>
+          <option>Carnes y pescados</option>
+          <option>Despensa</option>
+          <option>Panadería</option>
+          <option>Bebidas</option>
+          <option>Congelados</option>
+          <option>Otros</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Ubicación en casa</label>
+        <select id="foodLocation">
+          <option>Refrigerador</option>
+          <option>Alacena</option>
+          <option>Congelador</option>
+          <option>Frutero</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid3">
+      <div class="field">
+        <label>Precio total ($ MXN)</label>
+        <input id="foodPrice" type="number" min="0" step="0.5" placeholder="0.00">
+      </div>
+      <div class="field">
+        <label>Fecha de compra</label>
+        <input id="foodBought" type="date">
+      </div>
+      <div class="field">
+        <label>Caducidad *</label>
+        <input id="foodExpiry" type="date" required>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Notas (opcional)</label>
+      <input id="foodNotes" placeholder="Ej. Abierto el martes, usar para salsa...">
+    </div>
+
+    <button class="primary" style="width:100%;margin-top:8px;padding:12px" type="submit">💾 Guardar en despensa</button>
+  </form>
+</dialog>
+
+<!-- ==================== MODAL CONSUMO PARCIAL ==================== -->
+<dialog id="partialDialog">
+  <form id="partialForm">
+    <div class="modal-head">
+      <h2>Consumo parcial</h2>
+      <button type="button" class="secondary btn-xs" onclick="closeModal('partialDialog')">✕</button>
+    </div>
+    <input type="hidden" id="partialId">
+    <p class="muted" id="partialDesc" style="margin-top:0"></p>
+    <div class="field">
+      <label>¿Qué cantidad utilizaste?</label>
+      <input id="partialAmount" type="number" min="0.1" step="0.1" required>
+    </div>
+    <button class="primary" style="width:100%" type="submit">✓ Descontar y sumar ahorro</button>
+  </form>
+</dialog>
+
+<!-- ==================== MODAL DESPERDICIO ==================== -->
+<dialog id="wasteDialog">
+  <form id="wasteForm">
+    <div class="modal-head">
+      <h2>Registrar desperdicio</h2>
+      <button type="button" class="secondary btn-xs" onclick="closeModal('wasteDialog')">✕</button>
+    </div>
+    <input type="hidden" id="wasteId">
+    <p class="muted" id="wasteDesc" style="margin-top:0"></p>
+    <div class="field">
+      <label>Motivo principal (ayuda a mejorar tus compras)</label>
+      <select id="wasteReason">
+        <option value="Caducó sin usarse">Se pasó la fecha de caducidad</option>
+        <option value="Se echó a perder antes">Se echó a perder antes de tiempo</option>
+        <option value="Sobró comida preparada">Sobró demasiada comida</option>
+        <option value="Olvidé que lo tenía">Olvidé que estaba en el refri/alacena</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button type="button" class="secondary" style="flex:1" onclick="closeModal('wasteDialog')">Cancelar</button>
+      <button type="submit" class="danger-btn" style="flex:1">Confirmar pérdida</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ==================== MODAL CENTRO DE AVISOS ==================== -->
+<dialog id="alertsDialog">
+  <div class="modal-head">
+    <h2>🔔 Centro de Avisos</h2>
+    <button type="button" class="secondary btn-xs" onclick="closeModal('alertsDialog')">✕ Cerrar</button>
+  </div>
+  <div id="alertsModalBody"></div>
+</dialog>
+
+<!-- ==================== MODAL CONFIRMACIÓN PERSONALIZADA ==================== -->
+<dialog id="confirmDialog" style="width:min(92%,390px)">
+  <h3 style="margin:0 0 8px;font-size:17px">Confirmar acción</h3>
+  <p class="muted" id="confirmText" style="margin:0 0 16px"></p>
+  <div style="display:flex;gap:8px;justify-content:end">
+    <button type="button" class="secondary" onclick="closeModal('confirmDialog')">Cancelar</button>
+    <button type="button" class="primary" id="confirmOkBtn">Aceptar</button>
+  </div>
+</dialog>
+
+<script>
+/* ==================== SISTEMA DE AUTENTICACIÓN Y CUENTAS ==================== */
+const USERS_DB_KEY = 'mdi_users_registry_v1';
+const SESSION_KEY = 'mdi_active_session_v1';
+
+let currentUser = null; // { id, name, email, homeName, isGuest }
+let state = {
+  foods: [],
+  shopping: [],
+  history: [],
+  planner: {}, // { Lunes: 'r1', Martes: 'r2', ... }
+  settings: { alertDays: 3, monthlyGoal: 500 }
+};
+
+const todayISO = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
+const addDaysISO = (n) => {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
+
+function getUsersRegistry() {
+  try { return JSON.parse(localStorage.getItem(USERS_DB_KEY) || '[]'); }
+  catch (e) { return []; }
+}
+function saveUsersRegistry(list) {
+  localStorage.setItem(USERS_DB_KEY, JSON.stringify(list));
+}
+function getUserStorageKey(userId) {
+  return `mdi_data_${userId}_v2`;
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+}
+
+function renderSavedAccounts() {
+  const users = getUsersRegistry();
+  const box = document.getElementById('savedAccountsBox');
+  const list = document.getElementById('savedAccountsList');
+  if (!users.length) {
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'block';
+  list.innerHTML = users.map(u => `
+    <div class="acc-chip" onclick="quickLoginUser('${u.id}')">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div class="avatar-circle" style="background:var(--green);color:white">${esc(u.name.charAt(0).toUpperCase())}</div>
+        <div>
+          <b style="font-size:13px;display:block">${esc(u.name)}</b>
+          <span class="muted" style="font-size:11px">${esc(u.email)} · ${esc(u.homeName || 'Casa')}</span>
+        </div>
+      </div>
+      <span class="pill">Entrar →</span>
+    </div>
+  `).join('');
+}
+
+document.getElementById('registerForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('regPass').value;
+  const homeName = document.getElementById('regHome').value.trim() || 'Casa Principal';
+  const withDemo = document.getElementById('regSeedDemo').checked;
+
+  const users = getUsersRegistry();
+  if (users.some(u => u.email === email)) {
+    toast('⚠️ Ese correo ya está registrado. Inicia sesión.');
+    switchAuthTab('login');
+    document.getElementById('loginEmail').value = email;
+    return;
+  }
+
+  const newUser = { id: uid(), name, email, pass, homeName, isGuest: false };
+  users.push(newUser);
+  saveUsersRegistry(users);
+
+  currentUser = { id: newUser.id, name: newUser.name, email: newUser.email, homeName: newUser.homeName, isGuest: false };
+  localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+
+  if (withDemo) seedDemoState();
+  else {
+    state = { foods: [], shopping: [], history: [], planner: {}, settings: { alertDays: 3, monthlyGoal: 500 } };
+    saveState();
+  }
+
+  enterApp();
+  toast(`🎉 ¡Bienvenido/a, ${name}!`);
+});
+
+document.getElementById('loginForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const emailOrUser = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('loginPass').value;
+  const users = getUsersRegistry();
+  const found = users.find(u => (u.email === emailOrUser || u.name.toLowerCase() === emailOrUser) && u.pass === pass);
+
+  if (!found) {
+    toast('❌ Correo o contraseña incorrectos');
+    return;
+  }
+
+  currentUser = { id: found.id, name: found.name, email: found.email, homeName: found.homeName || 'Casa Principal', isGuest: false };
+  localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  loadUserState();
+  enterApp();
+  toast(`👋 ¡Hola de nuevo, ${found.name}!`);
+});
+
+function quickLoginUser(userId) {
+  const found = getUsersRegistry().find(u => u.id === userId);
+  if (!found) return;
+  currentUser = { id: found.id, name: found.name, email: found.email, homeName: found.homeName || 'Casa Principal', isGuest: false };
+  localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  loadUserState();
+  enterApp();
+  toast(`👋 Sesión iniciada como ${found.name}`);
+}
+
+function loginAsGuest() {
+  currentUser = { id: 'guest_demo', name: 'Invitado', email: 'invitado@despensa.local', homeName: 'Hogar Demo', isGuest: true };
+  localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  loadUserState();
+  enterApp();
+  toast('👤 Entraste en Modo Invitado');
+}
+
+function logoutUser() {
+  localStorage.removeItem(SESSION_KEY);
+  currentUser = null;
+  renderSavedAccounts();
+  document.getElementById('authScreen').classList.add('active');
+  toast('🔒 Sesión cerrada');
+}
+
+function enterApp() {
+  document.getElementById('authScreen').classList.remove('active');
+  updateUserUI();
+  refreshAll();
+}
+
+function updateUserUI() {
+  if (!currentUser) return;
+  const initial = (currentUser.name || 'U').charAt(0).toUpperCase();
+  document.getElementById('userAvatar').textContent = initial;
+  document.getElementById('profileAvatarBig').textContent = initial;
+  document.getElementById('userHeaderName').textContent = currentUser.name.split(' ')[0];
+  document.getElementById('welcomeUserName').textContent = currentUser.name.split(' ')[0];
+  document.getElementById('headerSub').textContent = `🏡 ${currentUser.homeName} · Cuida tu comida y tu bolsillo.`;
+  document.getElementById('profileDisplayName').textContent = currentUser.name;
+  document.getElementById('profileDisplayEmail').textContent = `${currentUser.email} · ${currentUser.homeName}`;
+  document.getElementById('profNameInput').value = currentUser.name;
+  document.getElementById('profHomeInput').value = currentUser.homeName;
+}
+
+document.getElementById('profileForm').addEventListener('submit', e => {
+  e.preventDefault();
+  if (!currentUser) return;
+  const newName = document.getElementById('profNameInput').value.trim();
+  const newHome = document.getElementById('profHomeInput').value.trim();
+  if (!newName) return;
+
+  currentUser.name = newName;
+  currentUser.homeName = newHome || 'Casa Principal';
+  localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+
+  if (!currentUser.isGuest) {
+    const users = getUsersRegistry().map(u => u.id === currentUser.id ? { ...u, name: newName, homeName: currentUser.homeName } : u);
+    saveUsersRegistry(users);
+  }
+  updateUserUI();
+  toast('✓ Perfil actualizado');
+});
+
+/* ==================== PERSISTENCIA DE DATOS DEL USUARIO ==================== */
+function loadUserState() {
+  if (!currentUser) return;
+  try {
+    const raw = localStorage.getItem(getUserStorageKey(currentUser.id));
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state = {
+        foods: parsed.foods || [],
+        shopping: parsed.shopping || [],
+        history: parsed.history || [],
+        planner: parsed.planner || {},
+        settings: { alertDays: 3, monthlyGoal: 500, ...(parsed.settings || {}) }
+      };
+    } else {
+      seedDemoState();
+    }
+  } catch (e) {
+    seedDemoState();
+  }
+}
+
+function saveState() {
+  if (!currentUser) return;
+  localStorage.setItem(getUserStorageKey(currentUser.id), JSON.stringify(state));
+}
+
+function seedDemoState() {
+  state = {
+    foods: [
+      { id: uid(), name: 'Leche entera', qty: 1, unit: 'litro(s)', category: 'Lácteos', location: 'Refrigerador', price: 29, bought: addDaysISO(-4), expiry: addDaysISO(1), notes: 'Abierta' },
+      { id: uid(), name: 'Plátanos maduros', qty: 4, unit: 'pieza(s)', category: 'Frutas y verduras', location: 'Frutero', price: 22, bought: addDaysISO(-3), expiry: todayISO(), notes: 'Ideales para licuado o hotcakes' },
+      { id: uid(), name: 'Huevo blanco', qty: 8, unit: 'pieza(s)', category: 'Lácteos', location: 'Refrigerador', price: 36, bought: addDaysISO(-2), expiry: addDaysISO(12), notes: '' },
+      { id: uid(), name: 'Jitomate saladet', qty: 0.8, unit: 'kg', category: 'Frutas y verduras', location: 'Refrigerador', price: 28, bought: addDaysISO(-2), expiry: addDaysISO(3), notes: '' },
+      { id: uid(), name: 'Pechuga de pollo', qty: 0.5, unit: 'kg', category: 'Carnes y pescados', location: 'Congelador', price: 68, bought: addDaysISO(-5), expiry: addDaysISO(15), notes: 'En filetes' },
+      { id: uid(), name: 'Tortillas de maíz', qty: 0.5, unit: 'kg', category: 'Panadería', location: 'Refrigerador', price: 14, bought: addDaysISO(-1), expiry: addDaysISO(2), notes: '' },
+      { id: uid(), name: 'Frijoles negros', qty: 1, unit: 'paquete(s)', category: 'Despensa', location: 'Alacena', price: 38, bought: addDaysISO(-10), expiry: addDaysISO(90), notes: '' },
+      { id: uid(), name: 'Queso panela', qty: 1, unit: 'pieza(s)', category: 'Lácteos', location: 'Refrigerador', price: 48, bought: addDaysISO(-3), expiry: addDaysISO(2), notes: '' }
+    ],
+    shopping: [
+      { id: uid(), name: 'Aguacate Hass', qty: 3, price: 35, checked: false },
+      { id: uid(), name: 'Cebolla blanca', qty: 1, price: 20, checked: false },
+      { id: uid(), name: 'Avena en hojuelas', qty: 1, price: 26, checked: true }
+    ],
+    history: [
+      { id: uid(), name: 'Manzanas', category: 'Frutas y verduras', qty: 4, unit: 'pieza(s)', value: 32, type: 'consumed', reason: '', date: addDaysISO(-2) },
+      { id: uid(), name: 'Yogurt natural', category: 'Lácteos', qty: 1, unit: 'litro(s)', value: 42, type: 'consumed', reason: '', date: addDaysISO(-1) },
+      { id: uid(), name: 'Arroz blanco', category: 'Despensa', qty: 1, unit: 'kg', value: 28, type: 'consumed', reason: '', date: todayISO() }
+    ],
+    planner: { Lunes: 'r2', Martes: 'r7', Miércoles: 'r10', Jueves: 'r12', Viernes: 'r15' },
+    settings: { alertDays: 3, monthlyGoal: 500 }
+  };
+  saveState();
+}
+
+/* ==================== UTILIDADES ==================== */
+function uid() {
+  return (crypto.randomUUID ? crypto.randomUUID() : 'id_' + Math.random().toString(36).slice(2) + Date.now());
+}
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function dateDiff(dateStr) {
+  const a = new Date(todayISO() + 'T00:00:00');
+  const b = new Date(dateStr + 'T00:00:00');
+  return Math.round((b - a) / 86400000);
+}
+function fmtDate(s) {
+  if (!s) return 'Sin fecha';
+  return new Date(s + 'T00:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.style.display = 'none', 2600);
+}
+function closeModal(id) {
+  document.getElementById(id).close();
+}
+function askConfirm(message, onConfirm) {
+  document.getElementById('confirmText').textContent = message;
+  const btn = document.getElementById('confirmOkBtn');
+  btn.onclick = () => {
+    closeModal('confirmDialog');
+    onConfirm();
+  };
+  document.getElementById('confirmDialog').showModal();
+}
+
+function getCategoryIcon(cat) {
+  const map = {
+    'Frutas y verduras': '🥬',
+    'Lácteos': '🥛',
+    'Carnes y pescados': '🍗',
+    'Despensa': '🥫',
+    'Panadería': '🥖',
+    'Bebidas': '🧃',
+    'Congelados': '🧊',
+    'Otros': '🥗'
+  };
+  return map[cat] || '🥗';
+}
+function getLocationIcon(loc) {
+  const map = { 'Refrigerador': '❄️', 'Congelador': '🧊', 'Alacena': '🗄️', 'Frutero': '🧺' };
+  return map[loc] || '📍';
+}
+function getExpiryStatus(food) {
+  const d = dateDiff(food.expiry);
+  const limit = Number(state.settings.alertDays) || 3;
+  if (d < 0) return { label: `Caducó hace ${Math.abs(d)}d`, pill: 'Caducado', cls: 'danger', d };
+  if (d === 0) return { label: 'Vence HOY', pill: 'Vence hoy', cls: 'danger', d };
+  if (d === 1) return { label: 'Vence mañana', pill: 'Mañana', cls: 'warn', d };
+  if (d <= limit) return { label: `Vence en ${d} días`, pill: `En ${d}d`, cls: 'warn', d };
+  return { label: `Caduca ${fmtDate(food.expiry)}`, pill: 'En fecha', cls: '', d };
+}
+function calcStreak() {
+  const wastes = state.history.filter(h => h.type === 'wasted').sort((a,b) => b.date.localeCompare(a.date));
+  if (!wastes.length) return state.history.length ? Math.max(3, state.history.length) : 0;
+  return Math.abs(dateDiff(wastes[0].date));
+}
+
+/* ==================== NAVEGACIÓN ==================== */
+function showView(viewId) {
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === viewId));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.view === viewId));
+  refreshAll();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ==================== BASE DE DATOS DE 24 RECETAS ==================== */
+const RECIPES_DB = [
+  { id:'r1', title:'Licuado energético de plátano y avena', emoji:'🥤', meal:'Desayuno', time:5, diff:'Fácil', ingredients:['plátano','leche','avena'], steps:'Licúa 1 plátano maduro con 1 taza de leche, 3 cucharadas de avena y una pizca de canela hasta obtener una mezcla cremosa.' },
+  { id:'r2', title:'Huevos a la mexicana', emoji:'🍳', meal:'Desayuno', time:15, diff:'Fácil', ingredients:['huevo','jitomate','cebolla'], steps:'Pica jitomate y cebolla, sofríelos en un poco de aceite por 3 minutos, agrega los huevos batidos con sal y cocina al gusto.' },
+  { id:'r3', title:'Chilaquiles rápidos en sartén', emoji:'🌶️', meal:'Desayuno', time:20, diff:'Fácil', ingredients:['tortilla','jitomate','queso','cebolla'], steps:'Corta las tortillas en triángulos y dóralas. Licúa jitomate cocido con cebolla y ajo, vierte sobre los totopos y corona con queso.' },
+  { id:'r4', title:'Sincronizadas de queso y frijol', emoji:'🫓', meal:'Desayuno', time:10, diff:'Fácil', ingredients:['tortilla','queso','frijol'], steps:'Unta frijoles refritos en una tortilla, agrega queso, tapa con otra tortilla y calienta en el comal hasta que derrita.' },
+  { id:'r5', title:'Hotcakes de plátano sin harina', emoji:'🥞', meal:'Desayuno', time:15, diff:'Fácil', ingredients:['plátano','huevo','avena'], steps:'Machaca 1 plátano, mézclalo con 2 huevos y 1/2 taza de avena. Cocina pequeñas porciones en sartén antiadherente.' },
+  { id:'r6', title:'Omelette de queso panela', emoji:'🧀', meal:'Desayuno', time:12, diff:'Fácil', ingredients:['huevo','queso'], steps:'Bate 2 huevos, viértelos en sartén caliente, rellena con cubitos de queso panela, dobla por la mitad y sirve.' },
+  { id:'r7', title:'Tacos dorados de pollo', emoji:'🌮', meal:'Comida', time:30, diff:'Media', ingredients:['pollo','tortilla','queso','jitomate'], steps:'Deshebra pechuga de pollo cocida, enrolla en tortillas calientes, dora en sartén y acompaña con salsa de jitomate y queso.' },
+  { id:'r8', title:'Arroz rojo casero', emoji:'🍚', meal:'Comida', time:30, diff:'Media', ingredients:['arroz','jitomate','cebolla'], steps:'Dora el arroz en un poco de aceite, agrega jitomate licuado con cebolla y 2 tazas de agua caliente por cada taza de arroz. Tapa a fuego bajo.' },
+  { id:'r9', title:'Pollo a la plancha con ensalada fresca', emoji:'🥗', meal:'Comida', time:20, diff:'Fácil', ingredients:['pollo','jitomate','aguacate'], steps:'Sazona filetes de pechuga con sal, pimienta y limón; ásalos 5 min por lado. Sirve con rebanadas de jitomate y aguacate.' },
+  { id:'r10', title:'Enfrijoladas tradicionales', emoji:'🫘', meal:'Comida', time:20, diff:'Fácil', ingredients:['frijol','tortilla','queso','cebolla'], steps:'Licúa frijoles cocidos con un poco de su caldo y cebolla. Baña tortillas pasadas por aceite, dobla y espolvorea queso.' },
+  { id:'r11', title:'Tinga de pollo express', emoji:'🍲', meal:'Comida', time:25, diff:'Fácil', ingredients:['pollo','jitomate','cebolla'], steps:'Sofríe cebolla fileteada, añade pollo deshebrado y salsa de jitomate sazonada. Cocina 10 minutos y sirve en tostadas o tacos.' },
+  { id:'r12', title:'Calabacitas a la mexicana con queso', emoji:'🥒', meal:'Comida', time:20, diff:'Fácil', ingredients:['calabacita','jitomate','cebolla','queso'], steps:'Sofríe cebolla y jitomate picado, agrega calabacitas en cubos, tapa 8 minutos y termina con cubos de queso panela.' },
+  { id:'r13', title:'Sopa de pasta con jitomate', emoji:'🍜', meal:'Comida', time:20, diff:'Fácil', ingredients:['pasta','jitomate','cebolla'], steps:'Dora la pasta en aceite, añade caldillo de jitomate licuado con cebolla y agua. Hierve hasta que la pasta esté suave.' },
+  { id:'r14', title:'Atún a la mexicana frío', emoji:'🐟', meal:'Comida', time:10, diff:'Fácil', ingredients:['atún','jitomate','cebolla','aguacate'], steps:'Escurre el atún y mézclalo con jitomate, cebolla picada, jugo de limón y cubos de aguacate.' },
+  { id:'r15', title:'Molletes gratinados', emoji:'🥖', meal:'Cena', time:15, diff:'Fácil', ingredients:['pan','frijol','queso','jitomate'], steps:'Corta bolillo o pan por la mitad, unta frijoles y queso, hornea o calienta en sartén tapado y sirve con pico de gallo.' },
+  { id:'r16', title:'Quesadillas de queso y aguacate', emoji:'🥑', meal:'Cena', time:10, diff:'Fácil', ingredients:['tortilla','queso','aguacate'], steps:'Calienta tortillas con queso hasta fundir y rellena con rebanadas de aguacate fresco y una pizca de sal.' },
+  { id:'r17', title:'Tostadas de frijoles con queso', emoji:'🥙', meal:'Cena', time:10, diff:'Fácil', ingredients:['tortilla','frijol','queso'], steps:'Usa tortillas crujientes o tostadas, unta frijoles calientes y cubre con queso fresco desmoronado.' },
+  { id:'r18', title:'Sándwich completo de pollo', emoji:'🥪', meal:'Cena', time:12, diff:'Fácil', ingredients:['pan','pollo','aguacate','jitomate'], steps:'Tuesta dos rebanadas de pan y rellena con pollo deshebrado, aguacate machacado y rodajas de jitomate.' },
+  { id:'r19', title:'Sopa rápida de huevo en caldillo', emoji:'🥣', meal:'Cena', time:18, diff:'Fácil', ingredients:['huevo','jitomate','cebolla'], steps:'Prepara un caldillo ligero de jitomate y cebolla; cuando hierva, rompe los huevos dentro y tapa 4 minutos hasta que cuajen.' },
+  { id:'r20', title:'Arroz con leche cremoso', emoji:'🍨', meal:'Snack / Bebida', time:35, diff:'Media', ingredients:['arroz','leche'], steps:'Cuece 1 taza de arroz en agua hasta que ablande, agrega 3 tazas de leche, azúcar y canela; mueve a fuego bajo 15 minutos.' },
+  { id:'r21', title:'Guacamole casero rápido', emoji:'🥑', meal:'Snack / Bebida', time:8, diff:'Fácil', ingredients:['aguacate','jitomate','cebolla'], steps:'Machaca el aguacate con un tenedor, incorpora jitomate y cebolla finamente picados, limón y sal.' },
+  { id:'r22', title:'Pan tostado con plátano y canela', emoji:'🍞', meal:'Snack / Bebida', time:7, diff:'Fácil', ingredients:['pan','plátano'], steps:'Tuesta rebanadas de pan, coloca rodajas de plátano encima y espolvorea canela en polvo.' },
+  { id:'r23', title:'Agua fresca de fruta natural', emoji:'🍹', meal:'Snack / Bebida', time:8, diff:'Fácil', ingredients:['manzana','plátano'], steps:'Licúa la fruta disponible con agua fría, un toque de limón y endulzante al gusto.' },
+  { id:'r24', title:'Ensalada de manzana cremosa', emoji:'🍎', meal:'Snack / Bebida', time:12, diff:'Fácil', ingredients:['manzana','yogurt'], steps:'Corta las manzanas en cubos pequeños y mézclalas con yogurt natural o crema y un toque de miel.' }
+];
+
+/* ==================== RENDERIZADO: INICIO ==================== */
+function renderHome() {
+  document.getElementById('todayLabel').textContent = new Date().toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' });
+
+  const active = state.foods;
+  const limit = Number(state.settings.alertDays) || 3;
+  const soonList = active.filter(f => { const d = dateDiff(f.expiry); return d >= 0 && d <= limit; });
+  const expiredList = active.filter(f => dateDiff(f.expiry) < 0);
+  const criticalToday = active.filter(f => dateDiff(f.expiry) <= 0);
+
+  const savedTotal = state.history.filter(h => h.type === 'consumed').reduce((s, h) => s + (Number(h.value) || 0), 0);
+  const streak = calcStreak();
+  const goal = Number(state.settings.monthlyGoal) || 500;
+  const goalPct = Math.min(100, Math.round((savedTotal / goal) * 100));
+
+  document.getElementById('statTotal').textContent = active.length;
+  document.getElementById('statSoon').textContent = soonList.length + expiredList.length;
+  document.getElementById('statSaved').textContent = '$' + savedTotal.toFixed(0);
+  document.getElementById('statShop').textContent = state.shopping.filter(x => !x.checked).length;
+  document.getElementById('streakHeader').textContent = streak;
+
+  document.getElementById('goalText').textContent = `$${savedTotal.toFixed(0)} / $${goal} MXN (${goalPct}%)`;
+  document.getElementById('goalBar').style.width = goalPct + '%';
+
+  // Banner crítico
+  const banner = document.getElementById('criticalBanner');
+  const dot = document.getElementById('alertDot');
+  if (criticalToday.length > 0) {
+    banner.classList.add('show');
+    dot.classList.add('show');
+    document.getElementById('criticalTitle').textContent = `⚠️ ${criticalToday.length} producto(s) vencen hoy o ya caducaron`;
+    document.getElementById('criticalDesc').textContent = criticalToday.map(x => x.name).slice(0,3).join(', ') + (criticalToday.length > 3 ? '...' : '');
+  } else {
+    banner.classList.remove('show');
+    dot.classList.toggle('show', soonList.length > 0);
+  }
+
+  // Sugerencia del Chef
+  const sorted = [...active].sort((a,b) => a.expiry.localeCompare(b.expiry));
+  let suggested = RECIPES_DB[0];
+  if (sorted.length > 0) {
+    const urgentName = sorted[0].name.toLowerCase();
+    const match = RECIPES_DB.find(r => r.ingredients.some(ing => urgentName.includes(ing) || ing.includes(urgentName.split(' ')[0])));
+    if (match) suggested = match;
+  }
+  document.getElementById('chefRecipeTitle').textContent = `${suggested.emoji} ${suggested.title}`;
+  document.getElementById('chefRecipeDesc').textContent = sorted.length
+    ? `Ideal para aprovechar tu "${sorted[0].name}" (${getExpiryStatus(sorted[0]).label}) · Listo en ${suggested.time} min.`
+    : `Una receta rápida de ${suggested.time} minutos con ingredientes básicos.`;
+
+  const urgentTop = sorted.slice(0, 4);
+  document.getElementById('urgentList').innerHTML = urgentTop.length
+    ? urgentTop.map(f => renderFoodCard(f)).join('')
+    : '<div class="empty"><div class="emoji">🌱</div><b>Tu despensa está vacía</b><p>Agrega tus primeros alimentos para empezar a cuidarlos.</p></div>';
+}
+
+/* ==================== RENDERIZADO: DESPENSA ==================== */
+function quickAddBasic(name, qty, unit, category, location, price, days) {
+  state.foods.push({
+    id: uid(),
+    name, qty, unit, category, location, price,
+    bought: todayISO(),
+    expiry: addDaysISO(days),
+    notes: 'Añadido rápido'
+  });
+  saveState();
+  refreshAll();
+  toast(`⚡ +${qty} ${unit} de ${name} agregado`);
+}
+
+function renderFoodCard(f) {
+  const st = getExpiryStatus(f);
+  const unitPrice = f.price && f.qty ? ` ($${(f.price / f.qty).toFixed(1)}/${f.unit})` : '';
+  return `
+    <div class="food-item">
+      <div class="food-row">
+        <div class="food-emoji">${getCategoryIcon(f.category)}</div>
+        <div class="food-info">
+          <b>
+            ${esc(f.name)}
+            <span class="pill ${st.cls}">${st.pill}</span>
+          </b>
+          <div class="food-meta">
+            <span><strong>${esc(String(f.qty))} ${esc(f.unit)}</strong>${unitPrice}</span>
+            <span>·</span>
+            <span>${getLocationIcon(f.location)} ${esc(f.location || 'Alacena')}</span>
+            <span>·</span>
+            <span>${st.label}</span>
+          </div>
+          ${f.notes ? `<div class="muted" style="font-size:11px;margin-top:3px">📝 ${esc(f.notes)}</div>` : ''}
+        </div>
+        <button class="secondary btn-xs" onclick="openFoodModal('${f.id}')">✏️ Editar</button>
+      </div>
+      <div class="food-actions">
+        <button class="primary btn-xs" onclick="consumeAll('${f.id}')">✓ Consumir todo</button>
+        <button class="secondary btn-xs" onclick="openPartialModal('${f.id}')">½ Usar parte</button>
+        <button class="secondary btn-xs" onclick="moveToShopping('${f.id}')">🛒 A lista</button>
+        <button class="warn-btn btn-xs" onclick="openWasteModal('${f.id}')">🗑️ Tirar</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderFoods() {
+  const q = (document.getElementById('searchFood')?.value || '').toLowerCase().trim();
+  const cat = document.getElementById('filterCategory')?.value || 'todas';
+  const loc = document.getElementById('filterLocation')?.value || 'todas';
+  const statusF = document.getElementById('filterStatus')?.value || 'todos';
+  const limit = Number(state.settings.alertDays) || 3;
+
+  let list = state.foods.filter(f => {
+    const matchText = f.name.toLowerCase().includes(q) || (f.notes || '').toLowerCase().includes(q);
+    const matchCat = cat === 'todas' || f.category === cat;
+    const matchLoc = loc === 'todas' || (f.location || 'Alacena') === loc;
+    const d = dateDiff(f.expiry);
+    let matchStatus = true;
+    if (statusF === 'soon') matchStatus = d >= 0 && d <= limit;
+    else if (statusF === 'expired') matchStatus = d < 0;
+    else if (statusF === 'low') matchStatus = Number(f.qty) <= 1;
+    return matchText && matchCat && matchLoc && matchStatus;
+  });
+
+  list.sort((a, b) => a.expiry.localeCompare(b.expiry));
+  document.getElementById('inventoryCount').textContent = list.length;
+  document.getElementById('foodList').innerHTML = list.length
+    ? list.map(f => renderFoodCard(f)).join('')
+    : '<div class="empty"><div class="emoji">🔍</div><b>No se encontraron alimentos</b><p>Prueba cambiando los filtros o agrega un producto nuevo.</p></div>';
+}
+
+/* ==================== ACCIONES DE INVENTARIO ==================== */
+function openFoodModal(id = '') {
+  const form = document.getElementById('foodForm');
+  form.reset();
+  document.getElementById('foodId').value = id;
+
+  if (id) {
+    const f = state.foods.find(x => x.id === id);
+    if (!f) return;
+    document.getElementById('foodModalTitle').textContent = 'Editar alimento';
+    document.getElementById('foodName').value = f.name;
+    document.getElementById('foodQty').value = f.qty;
+    document.getElementById('foodUnit').value = f.unit;
+    document.getElementById('foodCategory').value = f.category;
+    document.getElementById('foodLocation').value = f.location || 'Refrigerador';
+    document.getElementById('foodPrice').value = f.price || '';
+    document.getElementById('foodBought').value = f.bought || todayISO();
+    document.getElementById('foodExpiry').value = f.expiry;
+    document.getElementById('foodNotes').value = f.notes || '';
+  } else {
+    document.getElementById('foodModalTitle').textContent = 'Agregar alimento';
+    document.getElementById('foodQty').value = 1;
+    document.getElementById('foodBought').value = todayISO();
+    suggestExpiryByCategory();
+  }
+  document.getElementById('foodDialog').showModal();
+}
+
+function suggestExpiryByCategory() {
+  if (document.getElementById('foodId').value) return;
+  const cat = document.getElementById('foodCategory').value;
+  const daysMap = {
+    'Frutas y verduras': 5, 'Lácteos': 7, 'Carnes y pescados': 3,
+    'Panadería': 4, 'Bebidas': 14, 'Congelados': 45, 'Despensa': 90, 'Otros': 15
+  };
+  const locMap = {
+    'Frutas y verduras': 'Refrigerador', 'Lácteos': 'Refrigerador', 'Carnes y pescados': 'Refrigerador',
+    'Panadería': 'Alacena', 'Bebidas': 'Refrigerador', 'Congelados': 'Congelador', 'Despensa': 'Alacena', 'Otros': 'Alacena'
+  };
+  document.getElementById('foodExpiry').value = addDaysISO(daysMap[cat] || 7);
+  document.getElementById('foodLocation').value = locMap[cat] || 'Alacena';
+}
+
+document.getElementById('foodForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const id = document.getElementById('foodId').value;
+  const item = {
+    id: id || uid(),
+    name: document.getElementById('foodName').value.trim(),
+    qty: Number(document.getElementById('foodQty').value) || 1,
+    unit: document.getElementById('foodUnit').value,
+    category: document.getElementById('foodCategory').value,
+    location: document.getElementById('foodLocation').value,
+    price: Number(document.getElementById('foodPrice').value) || 0,
+    bought: document.getElementById('foodBought').value || todayISO(),
+    expiry: document.getElementById('foodExpiry').value,
+    notes: document.getElementById('foodNotes').value.trim()
+  };
+
+  if (id) {
+    state.foods = state.foods.map(x => x.id === id ? item : x);
+    toast('✓ Alimento actualizado');
+  } else {
+    state.foods.push(item);
+    toast('✓ Alimento agregado a tu despensa');
+  }
+  saveState();
+  closeModal('foodDialog');
+  refreshAll();
+});
+
+function consumeAll(id) {
+  const f = state.foods.find(x => x.id === id);
+  if (!f) return;
+  state.history.unshift({
+    id: uid(), name: f.name, category: f.category, qty: f.qty, unit: f.unit,
+    value: Number(f.price) || 0, type: 'consumed', reason: '', date: todayISO()
+  });
+  state.foods = state.foods.filter(x => x.id !== id);
+  saveState();
+  refreshAll();
+  toast(`💚 ¡Consumido! +$${(Number(f.price)||0).toFixed(0)} aprovechados`);
+}
+
+function openPartialModal(id) {
+  const f = state.foods.find(x => x.id === id);
+  if (!f) return;
+  document.getElementById('partialId').value = id;
+  document.getElementById('partialDesc').textContent = `Tienes ${f.qty} ${f.unit} de "${f.name}".`;
+  const input = document.getElementById('partialAmount');
+  input.max = f.qty;
+  input.value = Math.min(1, f.qty);
+  document.getElementById('partialDialog').showModal();
+}
+
+document.getElementById('partialForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const id = document.getElementById('partialId').value;
+  const used = Number(document.getElementById('partialAmount').value);
+  const f = state.foods.find(x => x.id === id);
+  if (!f || used <= 0) return;
+
+  if (used >= f.qty) {
+    closeModal('partialDialog');
+    consumeAll(id);
+    return;
+  }
+
+  const ratio = used / f.qty;
+  const usedValue = (Number(f.price) || 0) * ratio;
+
+  state.history.unshift({
+    id: uid(), name: f.name, category: f.category, qty: Number(used.toFixed(2)),
+    unit: f.unit, value: Number(usedValue.toFixed(2)), type: 'consumed', reason: 'Consumo parcial', date: todayISO()
+  });
+
+  f.qty = Number((f.qty - used).toFixed(2));
+  f.price = Number(((Number(f.price) || 0) - usedValue).toFixed(2));
+
+  saveState();
+  closeModal('partialDialog');
+  refreshAll();
+  toast(`✓ Descontado ${used} ${f.unit} de ${f.name}`);
+});
+
+function openWasteModal(id) {
+  const f = state.foods.find(x => x.id === id);
+  if (!f) return;
+  document.getElementById('wasteId').value = id;
+  document.getElementById('wasteDesc').textContent = `Vas a descartar ${f.qty} ${f.unit} de "${f.name}" ($${(Number(f.price)||0).toFixed(2)}).`;
+  document.getElementById('wasteDialog').showModal();
+}
+
+document.getElementById('wasteForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const id = document.getElementById('wasteId').value;
+  const reason = document.getElementById('wasteReason').value;
+  const f = state.foods.find(x => x.id === id);
+  if (!f) return;
+
+  state.history.unshift({
+    id: uid(), name: f.name, category: f.category, qty: f.qty, unit: f.unit,
+    value: Number(f.price) || 0, type: 'wasted', reason, date: todayISO()
+  });
+
+  state.foods = state.foods.filter(x => x.id !== id);
+  saveState();
+  closeModal('wasteDialog');
+  refreshAll();
+  toast('🗑️ Registrado en historial de desperdicio');
+});
+
+function moveToShopping(id) {
+  const f = state.foods.find(x => x.id === id);
+  if (!f) return;
+  const exists = state.shopping.some(s => s.name.toLowerCase() === f.name.toLowerCase());
+  if (!exists) {
+    state.shopping.push({ id: uid(), name: f.name, qty: 1, price: Number(f.price) || 0, checked: false });
+    saveState();
+    refreshAll();
+    toast(`🛒 "${f.name}" agregado a la lista de compras`);
+  } else {
+    toast(`ℹ️ "${f.name}" ya estaba en tu lista`);
+  }
+}
+
+/* ==================== 3. LISTA DE COMPRAS ==================== */
+document.getElementById('shopForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = document.getElementById('shopName').value.trim();
+  const qty = Number(document.getElementById('shopQty').value) || 1;
+  const price = Number(document.getElementById('shopPrice').value) || 0;
+  if (!name) return;
+
+  let estPrice = price;
+  if (!estPrice) {
+    const prev = state.history.find(h => h.name.toLowerCase().includes(name.toLowerCase())) ||
+                 state.foods.find(f => f.name.toLowerCase().includes(name.toLowerCase()));
+    if (prev && prev.value) estPrice = Number(prev.value);
+    else if (prev && prev.price) estPrice = Number(prev.price);
+  }
+
+  state.shopping.push({ id: uid(), name, qty, price: estPrice, checked: false });
+  e.target.reset();
+  document.getElementById('shopQty').value = 1;
+  saveState();
+  renderShopping();
+  renderHome();
+  toast('✓ Agregado a la lista');
+});
+
+function renderShopping() {
+  const totalEst = state.shopping.reduce((s, item) => s + (Number(item.price) || 0), 0);
+  document.getElementById('shopBudget').textContent = '$' + totalEst.toFixed(2) + ' MXN';
+
+  const container = document.getElementById('shoppingList');
+  if (!state.shopping.length) {
+    container.innerHTML = '<div class="empty"><div class="emoji">🛒</div><b>Tu lista de compras está vacía</b><p>Agrega productos arriba o importa los que están por terminarse.</p></div>';
+    return;
+  }
+
+  container.innerHTML = state.shopping.map(item => `
+    <div class="shop-row ${item.checked ? 'checked' : ''}">
+      <input type="checkbox" class="shop-check" ${item.checked ? 'checked' : ''} onchange="toggleShopItem('${item.id}')">
+      <div style="flex:1">
+        <b class="shop-name" style="font-size:14px">${esc(item.name)}</b>
+        <div class="muted" style="font-size:12px">Cantidad: ${item.qty} ${item.price ? `· Est: $${Number(item.price).toFixed(2)}` : ''}</div>
+      </div>
+      <button class="danger-btn btn-xs" onclick="removeShopItem('${item.id}')">✕</button>
+    </div>
+  `).join('');
+}
+
+function toggleShopItem(id) {
+  const item = state.shopping.find(x => x.id === id);
+  if (item) item.checked = !item.checked;
+  saveState();
+  renderShopping();
+  renderHome();
+}
+
+function removeShopItem(id) {
+  state.shopping = state.shopping.filter(x => x.id !== id);
+  saveState();
+  renderShopping();
+  renderHome();
+}
+
+function clearCheckedShop() {
+  state.shopping = state.shopping.filter(x => !x.checked);
+  saveState();
+  renderShopping();
+  renderHome();
+  toast('✓ Productos marcados eliminados');
+}
+
+function autoFillShoppingList() {
+  const limit = Number(state.settings.alertDays) || 3;
+  const candidates = state.foods.filter(f => Number(f.qty) <= 1 || dateDiff(f.expiry) <= limit);
+  let added = 0;
+  candidates.forEach(f => {
+    if (!state.shopping.some(s => s.name.toLowerCase() === f.name.toLowerCase())) {
+      state.shopping.push({ id: uid(), name: f.name, qty: 1, price: Number(f.price) || 0, checked: false });
+      added++;
+    }
+  });
+  saveState();
+  renderShopping();
+  renderHome();
+  toast(added ? `✨ Se agregaron ${added} producto(s) a tu lista` : 'Tu lista ya tiene todos los productos bajos o por vencer');
+}
+
+function transferPurchasedToPantry() {
+  const bought = state.shopping.filter(x => x.checked);
+  if (!bought.length) {
+    toast('⚠️ Marca primero los productos que ya compraste');
+    return;
+  }
+  bought.forEach(item => {
+    state.foods.push({
+      id: uid(),
+      name: item.name,
+      qty: item.qty || 1,
+      unit: 'pieza(s)',
+      category: 'Despensa',
+      location: 'Alacena',
+      price: Number(item.price) || 0,
+      bought: todayISO(),
+      expiry: addDaysISO(10),
+      notes: 'Agregado desde lista de compras'
+    });
+  });
+  state.shopping = state.shopping.filter(x => !x.checked);
+  saveState();
+  refreshAll();
+  toast(`📦 ¡${bought.length} producto(s) transferidos a tu Despensa!`);
+}
+
+/* ==================== 4. RECETARIO Y PLANIFICADOR SEMANAL ==================== */
+function switchRecipeSubtab(sub) {
+  document.getElementById('subBtnRecipes').classList.toggle('active', sub === 'recipes');
+  document.getElementById('subBtnPlanner').classList.toggle('active', sub === 'planner');
+  document.getElementById('recipesSubView').style.display = sub === 'recipes' ? 'block' : 'none';
+  document.getElementById('plannerSubView').style.display = sub === 'planner' ? 'block' : 'none';
+  if (sub === 'planner') renderPlanner();
+}
+
+function getInventoryKeywords() {
+  return state.foods.map(f => f.name.toLowerCase());
+}
+function hasIngredient(ing) {
+  const inv = getInventoryKeywords();
+  return inv.some(name => name.includes(ing.toLowerCase()) || ing.toLowerCase().includes(name.split(' ')[0]));
+}
+
+function renderRecipes() {
+  const meal = document.getElementById('recMeal').value;
+  const maxTime = Number(document.getElementById('recTime').value);
+  const diff = document.getElementById('recDiff').value;
+  const onlyHave = document.getElementById('recOnlyHave').checked;
+
+  let enriched = RECIPES_DB.map(r => {
+    const matched = r.ingredients.filter(ing => hasIngredient(ing));
+    const missing = r.ingredients.filter(ing => !hasIngredient(ing));
+    const pct = Math.round((matched.length / r.ingredients.length) * 100);
+    return { ...r, matched, missing, pct };
+  });
+
+  enriched = enriched.filter(r => {
+    if (meal !== 'todos' && r.meal !== meal) return false;
+    if (r.time > maxTime) return false;
+    if (diff !== 'todas' && r.diff !== diff) return false;
+    if (onlyHave && r.missing.length > 0) return false;
+    return true;
+  });
+
+  enriched.sort((a, b) => b.pct - a.pct || a.time - b.time);
+
+  document.getElementById('recipeMatchSummary').textContent = `${enriched.length} recetas encontradas`;
+  const grid = document.getElementById('recipeList');
+
+  if (!enriched.length) {
+    grid.innerHTML = '<div class="panel empty" style="grid-column:1/-1"><div class="emoji">🍳</div><b>No hay recetas con esos filtros</b><p>Desmarca "Solo con lo que tengo" o amplía el tiempo de preparación.</p></div>';
+    return;
+  }
+
+  grid.innerHTML = enriched.map(r => `
+    <div class="recipe">
+      <div>
+        <div class="recipe-top">
+          <span style="font-size:32px">${r.emoji}</span>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:end">
+            <span class="pill neutral">${r.meal}</span>
+            <span class="pill neutral">⏱ ${r.time}m</span>
+            <span class="pill ${r.pct === 100 ? '' : r.pct >= 50 ? 'warn' : 'neutral'}">${r.matched.length}/${r.ingredients.length} ing. (${r.pct}%)</span>
+          </div>
+        </div>
+        <h3>${esc(r.title)}</h3>
+        <div class="progress-bar"><div class="progress-fill" style="width:${r.pct}%"></div></div>
+        <div class="ing-tags">
+          ${r.ingredients.map(ing => {
+            const ok = hasIngredient(ing);
+            return `<span class="ing-tag ${ok ? 'have' : 'miss'}">${ok ? '✓' : '+'} ${esc(ing)}</span>`;
+          }).join('')}
+        </div>
+        <details style="font-size:13px;color:var(--muted);margin-top:8px">
+          <summary style="cursor:pointer;font-weight:600;color:var(--ink)">Ver pasos de preparación</summary>
+          <p style="margin:6px 0 0;line-height:1.5">${esc(r.steps)}</p>
+        </details>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:14px;padding-top:10px;border-top:1px solid var(--line);flex-wrap:wrap">
+        <button class="primary btn-xs" style="flex:1" onclick="cookRecipe('${r.id}')">👨‍🍳 ¡Cociné esto!</button>
+        ${r.missing.length ? `<button class="secondary btn-xs" onclick="addMissingToShop('${r.id}')">🛒 Faltantes (${r.missing.length})</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function addMissingToShop(recipeId) {
+  const r = RECIPES_DB.find(x => x.id === recipeId);
+  if (!r) return;
+  const missing = r.ingredients.filter(ing => !hasIngredient(ing));
+  let added = 0;
+  missing.forEach(ing => {
+    const label = ing.charAt(0).toUpperCase() + ing.slice(1);
+    if (!state.shopping.some(s => s.name.toLowerCase().includes(ing.toLowerCase()))) {
+      state.shopping.push({ id: uid(), name: label, qty: 1, price: 0, checked: false });
+      added++;
+    }
+  });
+  saveState();
+  refreshAll();
+  toast(added ? `🛒 Se agregaron ${added} ingrediente(s) a tu lista` : 'Ya tenías esos ingredientes en tu lista');
+}
+
+function cookRecipe(recipeId) {
+  const r = RECIPES_DB.find(x => x.id === recipeId);
+  if (!r) return;
+  let discounted = 0;
+  r.ingredients.forEach(ing => {
+    const match = state.foods.find(f => f.name.toLowerCase().includes(ing.toLowerCase()) || ing.toLowerCase().includes(f.name.toLowerCase().split(' ')[0]));
+    if (match) {
+      const useAmt = Math.min(1, match.qty);
+      const ratio = useAmt / match.qty;
+      const val = (Number(match.price) || 0) * ratio;
+      state.history.unshift({
+        id: uid(), name: `${match.name} (en ${r.title})`, category: match.category,
+        qty: Number(useAmt.toFixed(2)), unit: match.unit, value: Number(val.toFixed(2)),
+        type: 'consumed', reason: 'Receta cocinada', date: todayISO()
+      });
+      match.qty = Number((match.qty - useAmt).toFixed(2));
+      match.price = Number(((Number(match.price) || 0) - val).toFixed(2));
+      if (match.qty <= 0.05) state.foods = state.foods.filter(x => x.id !== match.id);
+      discounted++;
+    }
+  });
+  saveState();
+  refreshAll();
+  toast(discounted ? `🎉 ¡Buen provecho! Se descontaron ${discounted} ingrediente(s)` : '🎉 ¡Receta marcada como preparada!');
+}
+
+const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+function renderPlanner() {
+  const grid = document.getElementById('plannerGrid');
+  grid.innerHTML = DAYS_OF_WEEK.map(day => {
+    const selectedId = state.planner[day] || '';
+    const recipe = RECIPES_DB.find(r => r.id === selectedId);
+    return `
+      <div class="day-card">
+        <h4>
+          <span>📅 ${day}</span>
+          ${recipe ? `<span class="pill">⏱ ${recipe.time}m</span>` : '<span class="muted" style="font-size:11px">Libre</span>'}
+        </h4>
+        <select onchange="setDayPlan('${day}', this.value)">
+          <option value="">-- Elegir platillo para ${day} --</option>
+          ${RECIPES_DB.map(r => `<option value="${r.id}" ${r.id === selectedId ? 'selected' : ''}>${r.emoji} ${r.title} (${r.meal})</option>`).join('')}
+        </select>
+        ${recipe ? `<div class="muted" style="font-size:11.5px;margin-top:7px">Ingredientes: ${recipe.ingredients.join(', ')}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function setDayPlan(day, recipeId) {
+  if (recipeId) state.planner[day] = recipeId;
+  else delete state.planner[day];
+  saveState();
+  renderPlanner();
+}
+
+function syncPlannerToShopping() {
+  const selectedIds = Object.values(state.planner);
+  if (!selectedIds.length) {
+    toast('⚠️ Asigna al menos una receta en tu plan semanal');
+    return;
+  }
+  let added = 0;
+  selectedIds.forEach(rid => {
+    const r = RECIPES_DB.find(x => x.id === rid);
+    if (!r) return;
+    r.ingredients.forEach(ing => {
+      if (!hasIngredient(ing) && !state.shopping.some(s => s.name.toLowerCase().includes(ing.toLowerCase()))) {
+        const label = ing.charAt(0).toUpperCase() + ing.slice(1);
+        state.shopping.push({ id: uid(), name: label, qty: 1, price: 0, checked: false });
+        added++;
+      }
+    });
+  });
+  saveState();
+  refreshAll();
+  toast(added ? `🛒 Se agregaron ${added} ingrediente(s) faltantes de tu semana` : '✅ ¡Ya tienes todos los ingredientes para tu semana!');
+}
+
+/* ==================== 5. AHORRO Y ESTADÍSTICAS ==================== */
+function renderAnalytics() {
+  const consumed = state.history.filter(h => h.type === 'consumed');
+  const wasted = state.history.filter(h => h.type === 'wasted');
+
+  const valConsumed = consumed.reduce((s, h) => s + (Number(h.value) || 0), 0);
+  const valWasted = wasted.reduce((s, h) => s + (Number(h.value) || 0), 0);
+  const totalMoney = valConsumed + valWasted;
+  const eff = totalMoney > 0 ? Math.round((valConsumed / totalMoney) * 100) : 100;
+  const streak = calcStreak();
+
+  document.getElementById('anConsumedVal').textContent = '$' + valConsumed.toFixed(2);
+  document.getElementById('anConsumedCnt').textContent = consumed.length;
+  document.getElementById('anWastedVal').textContent = '$' + valWasted.toFixed(2);
+  document.getElementById('anWastedCnt').textContent = wasted.length;
+  document.getElementById('anEfficiency').textContent = eff + '%';
+  document.getElementById('anStreak').textContent = streak + ' días';
+
+  // Gráfica Donut SVG
+  const pctSaved = totalMoney > 0 ? Math.round((valConsumed / totalMoney) * 100) : 100;
+  const pctWaste = 100 - pctSaved;
+  const r = 38;
+  const circ = 2 * Math.PI * r;
+  const savedDash = (pctSaved / 100) * circ;
+
+  document.getElementById('balanceChart').innerHTML = `
+    <div class="donut-wrap">
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--red)" stroke-width="14" opacity="${totalMoney > 0 ? 0.85 : 0.15}"/>
+        <circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--green)" stroke-width="14"
+          stroke-dasharray="${savedDash} ${circ}" transform="rotate(-90 50 50)" stroke-linecap="round"/>
+        <text x="50" y="54" text-anchor="middle" font-size="16" font-weight="800" fill="var(--ink)">${pctSaved}%</text>
+      </svg>
+      <div style="flex:1;min-width:190px;display:flex;flex-direction:column;gap:8px;font-size:13px">
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--green);font-weight:700">● Comida aprovechada</span>
+          <strong>$${valConsumed.toFixed(2)} (${pctSaved}%)</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--red);font-weight:700">● Desperdicio registrado</span>
+          <strong>$${valWasted.toFixed(2)} (${pctWaste}%)</strong>
+        </div>
+        <div class="muted" style="font-size:12px">Total gestionado: $${totalMoney.toFixed(2)} MXN</div>
+      </div>
+    </div>
+  `;
+
+  // Gráfica por categoría
+  const catTotals = {};
+  consumed.forEach(h => {
+    const c = h.category || 'Otros';
+    catTotals[c] = (catTotals[c] || 0) + (Number(h.value) || 0);
+  });
+  const entries = Object.entries(catTotals).sort((a,b) => b[1] - a[1]);
+  const maxCat = entries.length ? Math.max(...entries.map(e => e[1]), 1) : 1;
+
+  document.getElementById('categoryChart').innerHTML = entries.length
+    ? entries.map(([cat, val]) => `
+      <div class="bar-row">
+        <div class="bar-label">
+          <span>${getCategoryIcon(cat)} ${esc(cat)}</span>
+          <span>$${val.toFixed(2)}</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-val" style="width:${Math.round((val/maxCat)*100)}%;background:var(--green)"></div>
+        </div>
+      </div>
+    `).join('')
+    : '<p class="muted" style="margin:0">Consume alimentos con precio registrado para ver el desglose por categoría.</p>';
+
+  // Logros
+  const badges = [
+    { icon:'🌱', title:'Primer Paso', desc:'Aprovecha tu primer alimento', unlocked: consumed.length >= 1 },
+    { icon:'🛡️', title:'Guardián del Refri', desc:'Aprovecha 5 o más productos', unlocked: consumed.length >= 5 },
+    { icon:'💰', title:'Ahorrador Inteligente', desc:'Supera los $100 MXN aprovechados', unlocked: valConsumed >= 100 },
+    { icon:'🔥', title:'Cero Desperdicio', desc:'Racha de 7 días sin tirar comida', unlocked: streak >= 7 }
+  ];
+  document.getElementById('badgesGrid').innerHTML = badges.map(b => `
+    <div class="badge-card ${b.unlocked ? 'unlocked' : ''}">
+      <div class="b-icon">${b.icon}</div>
+      <b>${b.title}</b>
+      <small>${b.desc}</small>
+    </div>
+  `).join('');
+
+  // Historial
+  const histEl = document.getElementById('historyList');
+  histEl.innerHTML = state.history.length
+    ? state.history.slice(0, 15).map(h => `
+      <div class="food-row" style="padding:9px 0;border-bottom:1px solid var(--line);align-items:center">
+        <div style="font-size:20px">${h.type === 'consumed' ? '💚' : '🗑️'}</div>
+        <div style="flex:1">
+          <b style="font-size:13px">${esc(h.name)}</b>
+          <div class="muted" style="font-size:11px">${fmtDate(h.date)} · ${h.qty} ${esc(h.unit)} ${h.reason ? `· ${esc(h.reason)}` : ''}</div>
+        </div>
+        <span class="pill ${h.type === 'consumed' ? '' : 'danger'}">
+          ${h.type === 'consumed' ? '+' : '-'}$${Number(h.value || 0).toFixed(2)}
+        </span>
+      </div>
+    `).join('')
+    : '<p class="muted" style="margin:0">Aún no hay movimientos registrados.</p>';
+}
+
+function clearHistory() {
+  state.history = [];
+  saveState();
+  refreshAll();
+  toast('Historial limpiado');
+}
+
+/* ==================== 6. AJUSTES, ALERTAS Y RESPALDO ==================== */
+function openAlertsModal() {
+  const limit = Number(state.settings.alertDays) || 3;
+  const urgent = state.foods
+    .filter(f => dateDiff(f.expiry) <= limit)
+    .sort((a,b) => a.expiry.localeCompare(b.expiry));
+
+  const body = document.getElementById('alertsModalBody');
+  if (!urgent.length) {
+    body.innerHTML = '<div class="empty"><div class="emoji">🎉</div><b>¡Todo en orden!</b><p>No tienes alimentos próximos a caducar.</p></div>';
+  } else {
+    body.innerHTML = urgent.map(f => {
+      const st = getExpiryStatus(f);
+      return `
+        <div class="food-row" style="padding:10px 0;border-bottom:1px solid var(--line);align-items:center">
+          <div style="font-size:22px">${getCategoryIcon(f.category)}</div>
+          <div style="flex:1">
+            <b>${esc(f.name)}</b>
+            <div class="muted" style="font-size:12px">${st.label} · ${f.qty} ${esc(f.unit)}</div>
+          </div>
+          <span class="pill ${st.cls}">${st.pill}</span>
+        </div>
+      `;
+    }).join('');
+  }
+  document.getElementById('alertsDialog').showModal();
+}
+
+function saveSettings() {
+  state.settings.alertDays = Number(document.getElementById('cfgAlertDays').value) || 3;
+  state.settings.monthlyGoal = Math.max(50, Number(document.getElementById('cfgMonthlyGoal').value) || 500);
+  saveState();
+  refreshAll();
+  toast('⚙️ Configuración guardada');
+}
+
+function exportJSON() {
+  const payload = { user: currentUser?.name, home: currentUser?.homeName, exportedAt: todayISO(), data: state };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `respaldo-despensa-${todayISO()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('📥 Respaldo JSON descargado');
+}
+
+function exportCSV() {
+  const headers = ['Nombre', 'Cantidad', 'Unidad', 'Categoria', 'Ubicacion', 'Precio_MXN', 'Fecha_Compra', 'Fecha_Caducidad', 'Notas'];
+  const rows = state.foods.map(f => [
+    `"${(f.name||'').replace(/"/g,'""')}"`,
+    f.qty,
+    `"${f.unit}"`,
+    `"${f.category}"`,
+    `"${f.location||'Alacena'}"`,
+    f.price || 0,
+    f.bought || '',
+    f.expiry || '',
+    `"${(f.notes||'').replace(/"/g,'""')}"`
+  ].join(','));
+  const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `inventario-despensa-${todayISO()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('📊 Archivo CSV exportado');
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      const data = parsed.data || parsed;
+      if (Array.isArray(data.foods)) {
+        state = {
+          foods: data.foods,
+          shopping: data.shopping || [],
+          history: data.history || [],
+          planner: data.planner || {},
+          settings: { alertDays: 3, monthlyGoal: 500, ...(data.settings || {}) }
+        };
+        saveState();
+        refreshAll();
+        toast('✅ Respaldo restaurado correctamente');
+      } else {
+        toast('⚠️ El archivo no tiene un formato válido');
+      }
+    } catch (err) {
+      toast('⚠️ Error al leer el archivo JSON');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function loadDemoData() {
+  seedDemoState();
+  refreshAll();
+  toast('🔄 Datos de demostración cargados');
+}
+
+function resetAllData() {
+  state = { foods: [], shopping: [], history: [], planner: {}, settings: { alertDays: 3, monthlyGoal: 500 } };
+  saveState();
+  refreshAll();
+  toast('🗑️ Todos los datos fueron eliminados');
+}
+
+/* ==================== INICIALIZACIÓN ==================== */
+function refreshAll() {
+  document.getElementById('cfgAlertDays').value = state.settings.alertDays || 3;
+  document.getElementById('cfgMonthlyGoal').value = state.settings.monthlyGoal || 500;
+  renderHome();
+  renderFoods();
+  renderShopping();
+  renderRecipes();
+  renderPlanner();
+  renderAnalytics();
+}
+
+(function init() {
+  try {
+    const savedSession = localStorage.getItem(SESSION_KEY);
+    if (savedSession) {
+      currentUser = JSON.parse(savedSession);
+      loadUserState();
+      enterApp();
+      return;
+    }
+  } catch (e) {}
+  renderSavedAccounts();
+  document.getElementById('authScreen').classList.add('active');
+})();
+
+/* ==================== CONFIGURACIÓN PWA (INSTALABLE + OFFLINE) ==================== */
+(function setupPWA() {
+  const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#315b45"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="270">🥑</text></svg>`;
+  const iconUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg);
+
+  const manifest = {
+    name: 'Mi Despensa Inteligente',
+    short_name: 'Mi Despensa',
+    description: 'Gestiona tu despensa, recetas y ahorro en casa sin desperdiciar comida.',
+    start_url: './',
+    display: 'standalone',
+    background_color: '#faf8f1',
+    theme_color: '#315b45',
+    orientation: 'portrait',
+    icons: [
+      { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+    ]
+  };
+
+  const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  const manifestLink = document.getElementById('pwa-manifest');
+  if (manifestLink) manifestLink.href = URL.createObjectURL(manifestBlob);
+
+  // Registro de Service Worker dinámico para funcionar sin conexión (Offline)
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    const swCode = `
+      const CACHE_NAME = 'mi-despensa-pwa-v1';
+      self.addEventListener('install', e => {
+        e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./'])));
+        self.skipWaiting();
+      });
+      self.addEventListener('activate', e => {
+        e.waitUntil(self.clients.claim());
+      });
+      self.addEventListener('fetch', e => {
+        e.respondWith(
+          fetch(e.request).then(res => {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(e.request, copy));
+            return res;
+          }).catch(() => caches.match(e.request))
+        );
+      });
+    `;
+    const swBlob = new Blob([swCode], { type: 'application/javascript' });
+    navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>
